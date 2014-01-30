@@ -34,6 +34,9 @@
     - groovy-postbuild
     - timestamper
     - gerrit-trigger
+    - shiningpanda
+    - email-ext
+    - token-macro
 
 - name: change plugins ownership of plugins directory
   file: "path={{ jenkins_home }}/plugins owner=jenkins group=jenkins recurse=yes state=directory"
