@@ -1,0 +1,48 @@
+- name: Install Openjdk 1.7 (jenkins is incompatible with 1.8)
+  yum: name=java-1.7.0-openjdk state=latest
+
+- name: install gnupg (required to handle repo keys)
+  yum: name=gnupg state=latest
+
+- name: add jenkins repo
+  command: curl -o /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+
+- name: add jenkins repo key
+  rpm_key: state=present key=http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
+
+- name: install jenkins
+  yum: name=jenkins state=latest
+
+- name: inject jjb credentials
+  copy: src=credentials.xml dest={{ jenkins_home }} owner=jenkins group=jenkins mode=0644
+
+- name: start jenkins (so it creates plugins directory)
+  service: name=jenkins state=started
+
+- name: Wait for jenkins to create plugins directory (wait module works only on files so base plugin credential must be bundled in the install)
+  wait_for: path="{{ jenkins_home }}/plugins/credentials.jpi"
+
+- name: install plugins
+  command: chdir={{ jenkins_home }}/plugins curl -L -O http://updates.jenkins-ci.org/latest/{{ item }}.hpi 
+  with_items:
+    - multiple-scms
+    - ansicolor
+    - git
+    - git-client
+    - scm-api
+    - hudson-wsclean-plugin
+    - groovy-postbuild
+    - timestamper
+    - gerrit-trigger
+
+- name: change plugins ownership of plugins directory
+  file: "path={{ jenkins_home }}/plugins owner=jenkins group=jenkins recurse=yes state=directory"
+
+- name: reload jenkins configuration
+  command: curl --data "" http://localhost:8080/reload
+
+- name: waiting for jenkins to come up
+  wait_for: port=8080 state=present
+
+- name: All done
+  debug: msg="Now you can connect to jenkins"

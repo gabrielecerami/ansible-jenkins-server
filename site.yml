@@ -1,0 +1,7 @@
+---
+- hosts: jenkins-servers
+  vars:
+    jenkins_home: "/var/lib/jenkins"
+  roles:
+      - jenkins-server
+
