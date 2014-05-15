@@ -8,3 +8,8 @@ launch playbook with
 ansible-playbook -vvvvv -i inventory site.yml (-u user -s   -- if root access is disabled)
 
 It injects jjb credential (with pass jjb) to use with jenkins job builder
+
+.. code:: yaml
+
+- test1:
+  test2: &anchor
